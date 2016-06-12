@@ -8,29 +8,29 @@ enum Type {
   NUMBER,
   PLUS,
   MINUS,
-  TIMES,
+  MULTIPLY,
   DIVIDE
 };
 
-typedef struct formula {
+struct Formula {
   Type type;
   double num;
-  formula *left;
-  formula *right;
+  Formula *left;
+  Formula *right;
 
-  formula(Type type, double num) {
+  Formula(Type type, double num) {
     this->type = type;
     this->num = num;
   }
 
-  formula(Type type, formula* left, formula* right) {
+  Formula(Type type, Formula* left, Formula* right) {
     this->type = type;
     this->left = left;
     this->right = right;
   }
-}formula;
+};
 
-formula* tokenize(std::string str);
+Formula* tokenize(std::string str);
 
 double read_number(std::string str, std::string::size_type pos_start,
                    std::string::size_type pos_end) {
@@ -40,25 +40,25 @@ double read_number(std::string str, std::string::size_type pos_start,
   return std::stod(number_str, nullptr);
 }
 
-formula* make_plus_node(formula* formula, ::formula* new_formula) {
-  return new ::formula(PLUS, formula, new_formula);
+Formula* make_plus_node(Formula* formula, Formula* new_formula) {
+  return new Formula(PLUS, formula, new_formula);
 }
 
-formula* make_minus_node(formula* formula, ::formula* new_formula) {
-  return new ::formula(MINUS, formula, new_formula);
+Formula* make_minus_node(Formula* formula, Formula* new_formula) {
+  return new Formula(MINUS, formula, new_formula);
 }
 
-formula* make_times_node(formula* formula, ::formula* new_formula) {
-  formula->right = new ::formula(TIMES, formula->right, new_formula);
+Formula* make_times_node(Formula* formula, Formula* new_formula) {
+  formula->right = new Formula(MULTIPLY, formula->right, new_formula);
   return formula;
 }
 
-formula* make_divide_node(formula* formula, ::formula* new_formula) {
-  formula->right = new ::formula(DIVIDE, formula->right, new_formula);
+Formula* make_divide_node(Formula* formula, Formula* new_formula) {
+  formula->right = new Formula(DIVIDE, formula->right, new_formula);
   return formula;
 }
 
-formula* make_brackets_node(formula* formula, std::string str) {
+Formula* make_brackets_node(Formula* formula, std::string str) {
   if (str.at(pos_operator_before) == '+') {
     pos_operator_before = pos_operator_after;
     return make_plus_node(formula, tokenize(str));
@@ -78,13 +78,13 @@ formula* make_brackets_node(formula* formula, std::string str) {
   return tokenize(str);
 }
 
-double evaluate(formula* formula) {
+double evaluate(Formula* formula) {
   double ans = 0;
   if (formula->type == PLUS)
     ans = evaluate(formula->left) + evaluate(formula->right);
   if (formula->type == MINUS)
     ans = evaluate(formula->left) - evaluate(formula->right);
-  if (formula->type == TIMES)
+  if (formula->type == MULTIPLY)
     ans = evaluate(formula->left) * evaluate(formula->right);
   if (formula->type == DIVIDE)
     ans = evaluate(formula->left) / evaluate(formula->right);
@@ -93,8 +93,8 @@ double evaluate(formula* formula) {
   return ans;
 }
 
-formula* tokenize(std::string str) {
-  formula* formula = new ::formula(NUMBER, 0);
+Formula* tokenize(std::string str) {
+  Formula* formula = new Formula(NUMBER, 0);
   double num;
 
   while (pos_operator_before + 1 < str.length()) {
@@ -113,13 +113,13 @@ formula* tokenize(std::string str) {
     num = read_number(str, pos_operator_before + 1, pos_operator_after);
     if (str.at(pos_operator_before) == '+' ||
         (str.at(pos_operator_before) == '('))
-      formula = make_plus_node(formula, new ::formula(NUMBER, num));
+      formula = make_plus_node(formula, new Formula(NUMBER, num));
     if (str.at(pos_operator_before) == '-')
-      formula = make_minus_node(formula, new ::formula(NUMBER, num));
+      formula = make_minus_node(formula, new Formula(NUMBER, num));
     if (str.at(pos_operator_before) == '*')
-      formula = make_times_node(formula, new ::formula(NUMBER, num));
+      formula = make_times_node(formula, new Formula(NUMBER, num));
     if (str.at(pos_operator_before) == '/')
-      formula = make_divide_node(formula, new ::formula(NUMBER, num));
+      formula = make_divide_node(formula, new Formula(NUMBER, num));
     if ( pos_operator_after == std::string::basic_string::npos)
       break;
     pos_operator_before = pos_operator_after;
@@ -135,7 +135,7 @@ int main() {
   std::string str;
   std::cin >> str;
   str = '+' + str;
-  formula* formula = tokenize(str);
+  Formula* formula = tokenize(str);
   std::cout << evaluate(formula) << std::endl;
   return 0;
 }
