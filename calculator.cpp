@@ -75,6 +75,7 @@ Formula* make_brackets_node(Formula* formula, std::string str) {
     pos_operator_before = pos_operator_after;
     return make_divide_node(formula, tokenize(str));
   }
+  pos_operator_before++;
   return tokenize(str);
 }
 
@@ -98,6 +99,10 @@ Formula* tokenize(std::string str) {
   double num;
 
   while (pos_operator_before + 1 < str.length()) {
+    if (str.at(pos_operator_before) == ')') {
+        pos_operator_before++;
+        break;
+      }
     pos_operator_after = str.find_first_of("+-*/()", pos_operator_before + 1);
     if (pos_operator_after != std::string::basic_string::npos &&
         str.at(pos_operator_after) == '(') {
@@ -105,9 +110,7 @@ Formula* tokenize(std::string str) {
       continue;
     }
     
-    if (pos_operator_after != std::string::basic_string::npos &&
-        str.at(pos_operator_after) == ')' &&
-        pos_operator_after - pos_operator_before == 1) {
+    if (pos_operator_after - pos_operator_before == 1) {
       pos_operator_after = str.find_first_of("+-*/)", pos_operator_after+1);
     }
     num = read_number(str, pos_operator_before + 1, pos_operator_after);
