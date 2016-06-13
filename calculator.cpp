@@ -1,9 +1,6 @@
 #include <cstdio>
 #include <iostream>
 
-std::string::size_type pos_operator_before = 0;
-std::string::size_type pos_operator_after = 0;
-
 enum Type {
   NUMBER,
   PLUS,
@@ -30,7 +27,7 @@ struct Formula {
   }
 };
 
-Formula* tokenize(std::string str);
+Formula* tokenize(std::string* str);
 
 double read_number(std::string str, std::string::size_type pos_start,
                    std::string::size_type pos_end) {
@@ -58,24 +55,24 @@ Formula* make_divide_node(Formula* formula, Formula* new_formula) {
   return formula;
 }
 
-Formula* make_brackets_node(Formula* formula, std::string str) {
-  if (str.at(pos_operator_before) == '+') {
-    pos_operator_before = pos_operator_after;
+Formula* make_brackets_node(Formula* formula, std::string* str) {
+  if ((*str).front() == '+') {
+    *str = (*str).substr(2);
     return make_plus_node(formula, tokenize(str));
   }
-  if (str.at(pos_operator_before) == '-') {
-    pos_operator_before = pos_operator_after;
+  if ((*str).front() == '-') {
+    *str = (*str).substr(2);
     return make_minus_node(formula, tokenize(str));
   }
-  if (str.at(pos_operator_before) == '*') {
-    pos_operator_before = pos_operator_after;
+  if ((*str).front() == '*') {
+    *str = (*str).substr(2);
     return make_multiply_node(formula, tokenize(str));
   }
-  if (str.at(pos_operator_before) == '/') {
-    pos_operator_before = pos_operator_after;
+  if ((*str).front() == '/') {
+    *str = (*str).substr(2);
     return make_divide_node(formula, tokenize(str));
   }
-  pos_operator_before++;
+  *str = (*str).substr(1);
   return tokenize(str);
 }
 
@@ -94,42 +91,48 @@ double evaluate(Formula* formula) {
   return ans;
 }
 
-Formula* tokenize(std::string str) {
+Formula* tokenize(std::string* str) {
   Formula* formula = new Formula(NUMBER, 0);
+  std::string::size_type pos_operator_before = 0;
+  std::string::size_type pos_operator_after = 0;
   double num;
-
-  while (pos_operator_before + 1 < str.length()) {
-    if (str.at(pos_operator_before) == ')') {
-        pos_operator_before++;
-        break;
-      }
-    pos_operator_after = str.find_first_of("+-*/()", pos_operator_before + 1);
+  *str = '+' + *str;
+  
+  while (pos_operator_before + 1 <= (*str).length()) {
+    if ((*str).front() == ')') {
+      *str = (*str).substr(1);
+      break;
+    }
+    pos_operator_after = (*str).find_first_of("+-*/()", pos_operator_before + 1);
     if (pos_operator_after != std::string::basic_string::npos &&
-        str.at(pos_operator_after) == '(') {
+        (*str).at(pos_operator_after) == '(') {
+      *str = (*str).substr(pos_operator_before);
       formula = make_brackets_node(formula, str);
+      pos_operator_before = 0;
       continue;
     }
     
     if (pos_operator_after - pos_operator_before == 1) {
-      pos_operator_after = str.find_first_of("+-*/)", pos_operator_after+1);
+      pos_operator_after = (*str).find_first_of("+-*/)", pos_operator_after + 1);
     }
-    num = read_number(str, pos_operator_before + 1, pos_operator_after);
-    if (str.at(pos_operator_before) == '+' ||
-        (str.at(pos_operator_before) == '('))
+    num = read_number(*str, pos_operator_before + 1, pos_operator_after);
+    if ((*str).at(pos_operator_before) == '+' ||
+        ((*str).at(pos_operator_before) == '('))
       formula = make_plus_node(formula, new Formula(NUMBER, num));
-    if (str.at(pos_operator_before) == '-')
+    if ((*str).at(pos_operator_before) == '-')
       formula = make_minus_node(formula, new Formula(NUMBER, num));
-    if (str.at(pos_operator_before) == '*')
+    if ((*str).at(pos_operator_before) == '*')
       formula = make_multiply_node(formula, new Formula(NUMBER, num));
-    if (str.at(pos_operator_before) == '/')
+    if ((*str).at(pos_operator_before) == '/')
       formula = make_divide_node(formula, new Formula(NUMBER, num));
     if (pos_operator_after == std::string::basic_string::npos)
       break;
-    pos_operator_before = pos_operator_after;
-    if (str.at(pos_operator_after) == ')') {
-      pos_operator_before++;
+    if ((*str).at(pos_operator_after) == ')') {
+      *str = (*str).substr(pos_operator_after + 1);
       break;
     }
+    pos_operator_before = pos_operator_after;
+   
   }
   return formula;
 }
@@ -137,8 +140,7 @@ Formula* tokenize(std::string str) {
 int main() {
   std::string str;
   std::cin >> str;
-  str = '+' + str;
-  Formula* formula = tokenize(str);
+  Formula* formula = tokenize(&str);
   std::cout << evaluate(formula) << std::endl;
   return 0;
 }
