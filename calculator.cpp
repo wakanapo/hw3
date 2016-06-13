@@ -48,7 +48,7 @@ Formula* make_minus_node(Formula* formula, Formula* new_formula) {
   return new Formula(MINUS, formula, new_formula);
 }
 
-Formula* make_times_node(Formula* formula, Formula* new_formula) {
+Formula* make_multiply_node(Formula* formula, Formula* new_formula) {
   formula->right = new Formula(MULTIPLY, formula->right, new_formula);
   return formula;
 }
@@ -69,7 +69,7 @@ Formula* make_brackets_node(Formula* formula, std::string str) {
   }
   if (str.at(pos_operator_before) == '*') {
     pos_operator_before = pos_operator_after;
-    return make_times_node(formula, tokenize(str));
+    return make_multiply_node(formula, tokenize(str));
   }
   if (str.at(pos_operator_before) == '/') {
     pos_operator_before = pos_operator_after;
@@ -120,10 +120,10 @@ Formula* tokenize(std::string str) {
     if (str.at(pos_operator_before) == '-')
       formula = make_minus_node(formula, new Formula(NUMBER, num));
     if (str.at(pos_operator_before) == '*')
-      formula = make_times_node(formula, new Formula(NUMBER, num));
+      formula = make_multiply_node(formula, new Formula(NUMBER, num));
     if (str.at(pos_operator_before) == '/')
       formula = make_divide_node(formula, new Formula(NUMBER, num));
-    if ( pos_operator_after == std::string::basic_string::npos)
+    if (pos_operator_after == std::string::basic_string::npos)
       break;
     pos_operator_before = pos_operator_after;
     if (str.at(pos_operator_after) == ')') {
