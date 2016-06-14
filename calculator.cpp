@@ -120,7 +120,7 @@ Formula* buildSyntaxTree(std::vector<std::string>* token_vector) {
   while (index < (*token_vector).size()) {
     std::cout << (*token_vector)[index] <<std::endl;
     if ((*token_vector)[index] == "(") {
-      std::string ope= (*token_vector)[index-1];
+      std::string ope = (*token_vector)[index-1];
       (*token_vector).erase((*token_vector).begin(), (*token_vector).begin() + index + 1);
       formula = make_brackets_node(formula, buildSyntaxTree(token_vector), ope);
       index = 0;
