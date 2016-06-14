@@ -118,15 +118,16 @@ Formula* buildSyntaxTree(std::vector<std::string>* token_vector) {
   Formula* formula = new Formula(NUMBER, 0);
   std::string::size_type index = 0;
   while (index < (*token_vector).size()) {
+    std::cout << (*token_vector)[index] <<std::endl;
     if ((*token_vector)[index] == "(") {
       std::string ope= (*token_vector)[index-1];
       (*token_vector).erase((*token_vector).begin(), (*token_vector).begin() + index + 1);
       formula = make_brackets_node(formula, buildSyntaxTree(token_vector), ope);
+      index = 0;
       continue;
     }
     if ((*token_vector)[index] == ")") {
       (*token_vector).erase((*token_vector).begin(), (*token_vector).begin() + index + 1);
-      index = 0;
       break;
     }
     if (std::any_of((*token_vector)[index].begin(), (*token_vector)[index].end(), isdigit)) {
