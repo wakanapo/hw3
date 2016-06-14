@@ -51,18 +51,6 @@ Formula* make_divide_node(Formula* formula, Formula* new_formula) {
   return formula;
 }
 
-Formula* make_brackets_node(Formula* formula, Formula* brackets_formula, std::string str) {
-  if (str == "+")
-    return formula = make_plus_node(formula, brackets_formula);
-  if (str == "-")
-    return formula = make_minus_node(formula, brackets_formula);
-  if (str == "*")
-    return formula = make_multiply_node(formula, brackets_formula);
-  if (str == "/")
-    return formula = make_divide_node(formula, brackets_formula);
-  return brackets_formula;
-}
-
 double evaluate(Formula* formula) {
   double ans = 0;
   if (formula->type == PLUS)
@@ -114,35 +102,46 @@ std::vector<std::string> tokenize(std::string str) {
   return token_vector;
 }
 
-Formula* buildSyntaxTree(std::vector<std::string>* token_vector) {
+std::string::size_type find_closed_parenthesis
+(std::vector<std::string> token_vector, std::string::size_type pos) {
+  int brackets_depth = 1;
+  while (pos < token_vector.size()) {
+     if (token_vector[pos] == "(")
+       brackets_depth++;
+     if (token_vector[pos] == ")")
+       brackets_depth--;
+     if (brackets_depth == 0)
+       break;
+     pos++;
+   }
+  return pos;
+}
+  
+
+Formula* buildSyntaxTree(std::vector<std::string> token_vector) {
   Formula* formula = new Formula(NUMBER, 0);
-  std::string::size_type index = 0;
-  while (index < (*token_vector).size()) {
-    if ((*token_vector)[index] == "(") {
-      std::string ope = (*token_vector)[index-1];
-      (*token_vector).erase((*token_vector).begin(), (*token_vector).begin() + index + 1);
-      formula = make_brackets_node(formula, buildSyntaxTree(token_vector), ope);
-      index = 0;
-      continue;
+  Formula* new_formula;
+  std::string::size_type index = 1;
+  std::string::size_type end = 0;
+  while (index < token_vector.size()) {
+    if (token_vector[index] == "(") {
+      end = find_closed_parenthesis(token_vector, index + 1);
+      std::vector<std::string> sub_token(token_vector.begin() + index + 1,
+                                         token_vector.begin() + end);
+      new_formula = buildSyntaxTree(sub_token);
     }
-    if ((*token_vector)[index] == ")") {
-      (*token_vector).erase((*token_vector).begin(), (*token_vector).begin() + index + 1);
-      break;
-    }
-    if (std::any_of((*token_vector)[index].begin(), (*token_vector)[index].end(), isdigit)) {
-      if ((*token_vector)[index-1] == "+")
-        formula = make_plus_node(formula, new Formula(NUMBER,
-                                                       read_number((*token_vector)[index])));
-      if ((*token_vector)[index-1] == "-")
-        formula = make_minus_node(formula, new Formula(NUMBER,
-                                                        read_number((*token_vector)[index])));
-      if ((*token_vector)[index-1] == "*")
-        formula = make_multiply_node(formula, new Formula(NUMBER,
-                                                        read_number((*token_vector)[index])));
-      if ((*token_vector)[index-1] == "/")
-        formula = make_divide_node(formula, new Formula(NUMBER,
-                                                        read_number((*token_vector)[index])));
-    }
+    if (std::any_of(token_vector[index].begin(), token_vector[index].end(), isdigit))
+      new_formula = new Formula(NUMBER, read_number(token_vector[index]));
+    if (token_vector[index-1] == "+")
+      formula = make_plus_node(formula, new_formula);
+    if (token_vector[index-1] == "-")
+      formula = make_minus_node(formula, new_formula);
+    if (token_vector[index-1] == "*")
+      formula = make_multiply_node(formula, new_formula);
+    if (token_vector[index-1] == "/")
+      formula = make_divide_node(formula, new_formula);
+    if (token_vector[index] == "(")
+      index = end;
     index++;
   }
   return formula;
@@ -152,7 +151,7 @@ int main() {
   std::string str;
   std::cin >> str;
   std::vector<std::string> v = tokenize(str);
-  Formula* formula = buildSyntaxTree(&v);
+  Formula* formula = buildSyntaxTree(v);
   std::cout << evaluate(formula) << std::endl;
   return 0;
 }
