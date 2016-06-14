@@ -131,16 +131,16 @@ Formula* buildSyntaxTree(std::vector<std::string>* token_vector) {
     }
     if (std::any_of((*token_vector)[index].begin(), (*token_vector)[index].end(), isdigit)) {
       if ((*token_vector)[index-1] == "+")
-        formula = make_plus_node(formula , new Formula(NUMBER,
+        formula = make_plus_node(formula, new Formula(NUMBER,
                                                        read_number((*token_vector)[index])));
       if ((*token_vector)[index-1] == "-")
-        formula = make_minus_node(formula , new Formula(NUMBER,
+        formula = make_minus_node(formula, new Formula(NUMBER,
                                                         read_number((*token_vector)[index])));
       if ((*token_vector)[index-1] == "*")
-        formula = make_multiply_node(formula , new Formula(NUMBER,
+        formula = make_multiply_node(formula, new Formula(NUMBER,
                                                            read_number((*token_vector)[index])));
       if ((*token_vector)[index-1] == "/")
-        formula = make_divide_node(formula , new Formula(NUMBER,
+        formula = make_divide_node(formula, new Formula(NUMBER,
                                                          read_number((*token_vector)[index])));
     }
     index++;
