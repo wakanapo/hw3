@@ -139,10 +139,10 @@ Formula* buildSyntaxTree(std::vector<std::string>* token_vector) {
                                                         read_number((*token_vector)[index])));
       if ((*token_vector)[index-1] == "*")
         formula = make_multiply_node(formula, new Formula(NUMBER,
-                                                           read_number((*token_vector)[index])));
+                                                        read_number((*token_vector)[index])));
       if ((*token_vector)[index-1] == "/")
         formula = make_divide_node(formula, new Formula(NUMBER,
-                                                         read_number((*token_vector)[index])));
+                                                        read_number((*token_vector)[index])));
     }
     index++;
   }
