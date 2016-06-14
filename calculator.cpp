@@ -116,7 +116,6 @@ std::string::size_type find_closed_parenthesis
    }
   return pos;
 }
-  
 
 Formula* buildSyntaxTree(std::vector<std::string> token_vector) {
   Formula* formula = new Formula(NUMBER, 0);
